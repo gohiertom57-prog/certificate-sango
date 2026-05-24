@@ -228,10 +228,10 @@
 
 <script>
 function checkPwd() {
-  const val = document.getElementById('pwd-input').value;
-  // Vérification simple encodée
-  const ok = btoa(val) === btoa('Sango004');
-  if (ok) {
+  const val = document.getElementById('pwd-input').value.trim();
+  const parts = ['San','go','004'];
+  const correct = parts.join('');
+  if (val === correct) {
     document.getElementById('lock-screen').style.display = 'none';
     sessionStorage.setItem('sango-auth', '1');
   } else {
