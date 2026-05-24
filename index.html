@@ -233,7 +233,7 @@ async function hashPwd(str) {
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-const HASH = 'b9b7939cce501484cfad8c78e193b644a2b0a82e79e9cf2fef1dc6cb74ee2f87'; // Sango004
+const HASH = '92defb2076ce661ccb2c6c8d49556b72d53a47858455d4bbb16a525b8ff771c1'; // Sango004
 
 async function checkPwd() {
   const val = document.getElementById('pwd-input').value;
