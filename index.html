@@ -773,19 +773,27 @@ async function generateCanvaPDF(client) {
       ctx.drawImage(img, 0, 0, W, H);
 
       // Replace "Name - Surname" with client name
-      // Position based on original design: left side, middle area
-      // Clear the "Name - Surname" area first
-      ctx.clearRect(180, 280, 700, 120);
-      // Redraw background color in that area (dark blue)
-      ctx.fillStyle = '#0d1b3e';
-      ctx.fillRect(180, 280, 700, 120);
+      // Text found at y=655-730, x=190-660 on 3000x1688 original
+      const scaleX = W / 3000;
+      const scaleY = H / 1688;
+      
+      // Cover entire "Name - Surname" text area precisely
+      const tx = 185 * scaleX;
+      const ty = 648 * scaleY;
+      const tw = 550 * scaleX;
+      const th = 95 * scaleY;
+      
+      // Fill with exact background color sampled from original
+      ctx.fillStyle = '#051a35';
+      ctx.fillRect(tx - 5, ty - 5, tw + 10, th + 10);
 
-      // Draw client name
+      // Draw client name matching original font style
+      const fontSize = Math.round(58 * scaleY);
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 62px serif';
+      ctx.font = `bold ${fontSize}px 'Georgia', serif`;
       ctx.textAlign = 'left';
-      const fullName = client.firstname + ' ' + client.lastname;
-      ctx.fillText(fullName, 190, 360);
+      const fullName = client.firstname + ' - ' + client.lastname;
+      ctx.fillText(fullName, tx, ty + th * 0.8);
 
       // Convert canvas to PDF via data URL
       const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
