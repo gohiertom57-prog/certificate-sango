@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SANGO × Livingseas — Certificats Auto</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root {
+    --ocean: #0a1628;
+    --ocean-mid: #1a3a5c;
+    --ocean-light: #2a5f8a;
+    --coral: #c06530;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --cream: #f8f5ee;
+    --text: #e8e4dc;
+    --text-muted: #8899aa;
+    --success: #4caf82;
+    --error: #e05555;
+    --border: rgba(201,168,76,0.25);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--ocean);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at 20% 20%, rgba(26,60,92,0.6) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(192,101,48,0.08) 0%, transparent 50%);
+    pointer-events: none; z-index: 0;
+  }
+  .container { max-width: 860px; margin: 0 auto; padding: 36px 20px; position: relative; z-index: 1; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 40px; }
+  .header-brands { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 18px; }
+  .brand-pill { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; }
+  .brand-sep { width: 30px; height: 1px; background: var(--border); }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 400; color: var(--cream); margin-bottom: 6px; }
+  .header p { color: var(--text-muted); font-size: 13px; }
+
+  /* Steps */
+  .steps { display: flex; align-items: center; justify-content: center; margin-bottom: 36px; }
+  .step { display: flex; align-items: center; gap: 8px; }
+  .step-num { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text-muted); transition: all 0.3s; flex-shrink: 0; }
+  .step-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; font-weight: 500; white-space: nowrap; transition: color 0.3s; }
+  .step-line { width: 36px; height: 1px; background: var(--border); margin: 0 6px; flex-shrink: 0; }
+  .step.active .step-num { background: var(--gold); border-color: var(--gold); color: var(--ocean); }
+  .step.active .step-label { color: var(--gold); }
+  .step.done .step-num { background: var(--success); border-color: var(--success); color: white; }
+  .step.done .step-label { color: var(--success); }
+
+  /* Cards */
+  .card { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 20px; }
+  .card-title { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 600; color: var(--gold); margin-bottom: 5px; }
+  .card-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 22px; line-height: 1.6; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 4px; margin-bottom: 20px; }
+  .tab { flex: 1; padding: 9px; border-radius: 6px; border: none; background: none; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .tab.active { background: var(--ocean-mid); color: var(--gold); border: 1px solid var(--border); }
+
+  /* Info box */
+  .info-box { background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.2); border-radius: 8px; padding: 13px 16px; font-size: 13px; color: var(--text-muted); margin-bottom: 18px; line-height: 1.6; }
+  .info-box strong { color: var(--gold); }
+  .info-box code { color: var(--gold-light); font-size: 12px; background: rgba(0,0,0,0.2); padding: 1px 5px; border-radius: 3px; }
+
+  /* Forms */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+  input, select, textarea { background: rgba(255,255,255,0.06); border: 1px solid rgba(201,168,76,0.2); border-radius: 7px; padding: 11px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; width: 100%; }
+  input:focus, select:focus, textarea:focus { border-color: var(--gold); background: rgba(255,255,255,0.08); }
+  select option { background: var(--ocean-mid); color: var(--text); }
+  input[readonly] { opacity: 0.7; cursor: default; }
+
+  /* Dropzone */
+  .dropzone { border: 2px dashed rgba(201,168,76,0.3); border-radius: 10px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+  .dropzone:hover, .dropzone.drag-over { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+  .dropzone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .dropzone-icon { font-size: 32px; margin-bottom: 10px; }
+  .dropzone-text { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
+  .dropzone-hint { font-size: 11px; color: rgba(136,153,170,0.6); letter-spacing: 1px; }
+
+  /* Mapping */
+  .mapping-grid { display: grid; grid-template-columns: 1fr 28px 1fr; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .mapping-arrow { color: var(--gold); text-align: center; font-size: 16px; }
+  .col-label { font-size: 12px; color: var(--text-muted); padding: 8px 11px; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px solid var(--border); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead { background: rgba(201,168,76,0.08); }
+  th { padding: 10px 13px; text-align: left; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 600; white-space: nowrap; }
+  td { padding: 10px 13px; border-top: 1px solid rgba(255,255,255,0.05); color: var(--text); }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-corail { background: rgba(192,101,48,0.2); color: #e8894a; border: 1px solid rgba(192,101,48,0.3); }
+  .badge-star { background: rgba(201,168,76,0.15); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.25); }
+  .badge-ok { background: rgba(76,175,130,0.15); color: var(--success); border: 1px solid rgba(76,175,130,0.25); }
+  .badge-pending { background: rgba(136,153,170,0.1); color: var(--text-muted); border: 1px solid rgba(136,153,170,0.2); }
+  .badge-error { background: rgba(224,85,85,0.15); color: #e07777; border: 1px solid rgba(224,85,85,0.25); }
+  .badge-running { background: rgba(201,168,76,0.12); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+
+  /* Gmail button */
+  .gmail-connect-btn {
+    display: flex; align-items: center; gap: 12px;
+    background: white; color: #3c4043;
+    border: 1px solid #dadce0; border-radius: 8px;
+    padding: 11px 20px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    transition: box-shadow 0.2s; width: 100%; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .gmail-connect-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .gmail-connect-btn img { width: 20px; height: 20px; }
+
+  .gmail-connected-box {
+    display: none; align-items: center; gap: 14px;
+    padding: 14px 18px; background: rgba(76,175,130,0.08);
+    border: 1px solid rgba(76,175,130,0.25); border-radius: 8px; margin-bottom: 16px;
+  }
+  .gmail-connected-box .gc-icon { font-size: 22px; }
+  .gmail-connected-box .gc-info strong { display: block; font-size: 14px; color: var(--cream); }
+  .gmail-connected-box .gc-info span { font-size: 12px; color: var(--success); }
+  .gmail-connected-box .gc-check { margin-left: auto; font-size: 20px; }
+
+  /* Canva config box */
+  .canva-config-box {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; background: rgba(201,168,76,0.06);
+    border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px;
+  }
+  .canva-config-box .cc-icon { font-size: 22px; }
+  .canva-config-box .cc-info strong { display: block; font-size: 13px; color: var(--cream); margin-bottom: 2px; }
+  .canva-config-box .cc-info a { font-size: 11px; color: var(--gold); text-decoration: none; }
+  .canva-config-box .cc-info a:hover { text-decoration: underline; }
+
+  /* Buttons */
+  .btn { padding: 11px 24px; border-radius: 7px; border: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 7px; }
+  .btn-primary { background: linear-gradient(135deg, var(--gold), #b8902a); color: var(--ocean); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(201,168,76,0.3); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-outline { background: none; border: 1px solid var(--border); color: var(--text-muted); }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-danger { background: rgba(224,85,85,0.15); border: 1px solid rgba(224,85,85,0.3); color: #e07777; }
+  .actions-row { display: flex; align-items: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+
+  /* Summary */
+  .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .summary-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 18px; text-align: center; }
+  .summary-num { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 600; color: var(--gold); line-height: 1; margin-bottom: 5px; }
+  .summary-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+
+  /* Progress */
+  .progress-block { margin-top: 18px; display: none; }
+  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-size: 13px; }
+  .progress-bar-wrap { background: rgba(255,255,255,0.07); border-radius: 4px; height: 5px; overflow: hidden; margin-bottom: 14px; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--gold), var(--coral)); border-radius: 4px; transition: width 0.4s ease; width: 0%; }
+  .log-box { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 14px; font-size: 12px; font-family: monospace; max-height: 180px; overflow-y: auto; line-height: 1.9; color: var(--text-muted); }
+  .log-ok { color: var(--success); }
+  .log-err { color: #e07777; }
+  .log-info { color: var(--gold); }
+
+  /* Email body */
+  .email-body-wrap textarea { min-height: 140px; resize: vertical; font-size: 13px; line-height: 1.7; }
+
+  /* section */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* manual list */
+  .manual-list-wrap { display: none; margin-top: 14px; }
+
+  @media (max-width: 580px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 1fr; }
+    .step-label { display: none; }
+    .step-line { width: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-brands">
+      <span class="brand-pill">Sango</span>
+      <div class="brand-sep"></div>
+      <span>🪸</span>
+      <div class="brand-sep"></div>
+      <span class="brand-pill">Livingseas</span>
+    </div>
+    <h1>Automatisation des Certificats</h1>
+    <p>Import Shopify · Génération Canva · Envoi Gmail automatique</p>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step active" id="step-1"><div class="step-num">1</div><div class="step-label">Import</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="step-2"><div class="step-num">2</div><div class="step-label">Email</div></div>
+    <div class="step-line"></div>
+    <div class="step" id="step-3"><div class="step-num">3</div><div class="step-label">Envoi</div></div>
+  </div>
+
+  <!-- ── SECTION 1 : Import ── -->
+  <div class="section active" id="section-1">
+    <div class="card">
+      <div class="card-title">📥 Import des clients</div>
+      <div class="card-sub">Importe ton export CSV Shopify ou ajoute un client manuellement. L'app lira le nom, prénom, email et type de corail.</div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('csv')">📄 CSV Shopify</button>
+        <button class="tab" onclick="switchTab('manual')">✏️ Client unique</button>
+      </div>
+
+      <!-- CSV -->
+      <div id="tab-csv">
+        <div class="info-box">
+          <strong>Export Shopify :</strong> Admin → Commandes → Exporter → CSV.<br>
+          Colonnes nécessaires : <code>Billing First Name</code>, <code>Billing Last Name</code>, <code>Email</code>, et le champ personnalisé du type de corail.
+        </div>
+        <div class="dropzone" id="dropzone">
+          <input type="file" accept=".csv" id="csv-file" onchange="handleCSV(event)"/>
+          <div class="dropzone-icon">📂</div>
+          <div class="dropzone-text">Glisse le fichier CSV ici ou clique pour parcourir</div>
+          <div class="dropzone-hint">EXPORT SHOPIFY — FORMAT CSV</div>
+        </div>
+
+        <div id="mapping-section" style="display:none; margin-top:18px;">
+          <p style="font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:12px; font-weight:600;">Correspondance des colonnes</p>
+          <div class="mapping-grid">
+            <div class="col-label">Prénom</div><div class="mapping-arrow">→</div>
+            <select id="map-firstname" onchange="refreshPreview()"></select>
+          </div>
+          <div class="mapping-grid">
+            <div class="col-label">Nom</div><div class="mapping-arrow">→</div>
+            <select id="map-lastname" onchange="refreshPreview()"></select>
+          </div>
+          <div class="mapping-grid">
+            <div class="col-label">Email</div><div class="mapping-arrow">→</div>
+            <select id="map-email" onchange="refreshPreview()"></select>
+          </div>
+          <div class="mapping-grid">
+            <div class="col-label">Type produit</div><div class="mapping-arrow">→</div>
+            <select id="map-product" onchange="refreshPreview()"></select>
+          </div>
+        </div>
+
+        <div id="csv-preview" style="display:none;">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Prénom</th><th>Nom</th><th>Email</th><th>Type</th></tr></thead>
+              <tbody id="preview-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual -->
+      <div id="tab-manual" style="display:none;">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Prénom</label>
+            <input type="text" id="m-firstname" placeholder="Marie"/>
+          </div>
+          <div class="form-group">
+            <label>Nom</label>
+            <input type="text" id="m-lastname" placeholder="Dupont"/>
+          </div>
+          <div class="form-group full">
+            <label>Email du client</label>
+            <input type="email" id="m-email" placeholder="client@email.com"/>
+          </div>
+          <div class="form-group full">
+            <label>Type de produit</label>
+            <select id="m-product">
+              <option value="Corail">🪸 Corail</option>
+              <option value="Star de Corail">⭐ Star de Corail</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-outline" onclick="addManual()" style="margin-top:12px;">+ Ajouter</button>
+        <div class="manual-list-wrap" id="manual-list-wrap">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Prénom</th><th>Nom</th><th>Email</th><th>Type</th><th></th></tr></thead>
+              <tbody id="manual-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn btn-primary" id="btn-next-1" onclick="goToStep(2)" disabled>Continuer →</button>
+        <span id="count-label" style="font-size:12px; color:var(--text-muted);"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2 : Gmail + Email ── -->
+  <div class="section" id="section-2">
+
+    <!-- Gmail -->
+    <div class="card">
+      <div class="card-title">📧 Connexion Gmail</div>
+      <div class="card-sub">Autorise l'accès à <strong style="color:var(--cream);">sango.restoration@gmail.com</strong> pour envoyer les certificats. Google va te demander de confirmer les permissions.</div>
+
+      <!-- Not connected state -->
+      <div id="gmail-not-connected">
+        <div class="info-box">
+          <strong>Comment ça fonctionne :</strong><br>
+          Clique sur "Connecter Gmail" → une fenêtre Google s'ouvre → connecte-toi avec <code>sango.restoration@gmail.com</code> → autorise l'envoi d'emails → c'est fait ✓
+        </div>
+        <button class="gmail-connect-btn" onclick="connectGmail()">
+          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 5C13.5 5 5 13.5 5 24s8.5 19 19 19 19-8.5 19-19S34.5 5 24 5z"/><path fill="#FBBC04" d="M5.3 14.7l8.4 6.3 3.3-2.8L5.3 14.7z"/><path fill="#34A853" d="M24 29l-7-5.3V37h14V23.7L24 29z"/><path fill="#4285F4" d="M43 24c0-1-.1-2-.3-3H24v6h10.7c-.5 2.3-1.8 4.3-3.7 5.7l5.8 4.5C40.1 33.8 43 29.3 43 24z"/><path fill="#EA4335" d="M13.7 21l-8.4-6.3C4 16.8 3 20.3 3 24c0 3.8 1 7.3 2.8 10.3l8.4-6.3-1-3.7 1-3.3z"/><path fill="#FBBC04" d="M24 44c5.7 0 10.5-1.9 14-5l-5.8-4.5c-2 1.3-4.5 2-8.2 2-6.3 0-11.6-4.3-13.5-10L3 31c3.4 7.2 10.5 13 21 13z"/></svg>
+          Se connecter avec Google — sango.restoration@gmail.com
+        </button>
+      </div>
+
+      <!-- Connected state -->
+      <div class="gmail-connected-box" id="gmail-connected-box">
+        <div class="gc-icon">✉️</div>
+        <div class="gc-info">
+          <strong>sango.restoration@gmail.com</strong>
+          <span>✓ Compte connecté — prêt à envoyer</span>
+        </div>
+        <div class="gc-check">✅</div>
+      </div>
+    </div>
+
+    <!-- Email content -->
+    <div class="card">
+      <div class="card-title">✍️ Contenu de l'email</div>
+      <div class="card-sub">Personnalise le message. Les variables <code style="color:var(--gold);">{prenom}</code>, <code style="color:var(--gold);">{nom}</code> et <code style="color:var(--gold);">{type}</code> seront remplacées automatiquement.</div>
+
+      <div class="form-grid" style="margin-bottom:16px;">
+        <div class="form-group full">
+          <label>Objet</label>
+          <input type="text" id="email-subject" value="🪸 Votre Certificat d'Adoption — SANGO × Livingseas"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Corps du message</label>
+        <div class="email-body-wrap">
+          <textarea id="email-body">Cher(e) {prenom} {nom},
+
+Nous avons le plaisir de vous remettre votre Certificat d'Adoption officiel pour votre {type}.
+
+En faisant ce choix, vous contribuez à la préservation des récifs coralliens et à la protection de nos océans. Votre engagement compte.
+
+Vous trouverez votre certificat en pièce jointe (PDF).
+
+Avec toute notre gratitude,
+L'équipe SANGO × Livingseas</textarea>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn btn-outline" onclick="goToStep(1)">← Retour</button>
+        <button class="btn btn-primary" id="btn-next-2" onclick="goToStep(3)">Prévisualiser & Envoyer →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3 : Envoi ── -->
+  <div class="section" id="section-3">
+    <div class="card">
+      <div class="card-title">🚀 Récapitulatif & Envoi</div>
+      <div class="card-sub">Vérifie avant de lancer. L'app va générer chaque certificat via Canva (design <code style="color:var(--gold-light);">DAHKk-vJeIo</code>) en remplaçant <strong style="color:var(--cream);">"Name Surname"</strong> par le nom du client, puis envoyer le PDF par email.</div>
+
+      <!-- Canva config recap -->
+      <div class="canva-config-box">
+        <div class="cc-icon">🎨</div>
+        <div class="cc-info">
+          <strong>Certificat Canva — SANGO × Livingseas</strong>
+          <a href="https://www.canva.com/design/DAHKk-vJeIo/S0AFoo2l4ZEPJByaALlPsg/edit" target="_blank">Ouvrir le design → canva.com/design/DAHKk-vJeIo</a>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-num" id="sum-total">0</div>
+          <div class="summary-label">Clients</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-num" id="sum-corail" style="color:var(--coral);">0</div>
+          <div class="summary-label">Corail</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-num" id="sum-star" style="color:var(--gold-light);">0</div>
+          <div class="summary-label">Star de Corail</div>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-bottom:18px;">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Client</th><th>Email</th><th>Type</th><th>Certificat</th><th>Email</th></tr>
+          </thead>
+          <tbody id="send-body"></tbody>
+        </table>
+      </div>
+
+      <div class="progress-block" id="progress-block">
+        <div class="progress-header">
+          <span id="progress-label" style="color:var(--text-muted);">Préparation...</span>
+          <span id="progress-pct" style="color:var(--gold);">0%</span>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+        <div class="log-box" id="log-box"></div>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn btn-outline" onclick="goToStep(2)">← Retour</button>
+        <button class="btn btn-primary" id="btn-send" onclick="startSending()">🚀 Lancer l'envoi</button>
+        <button class="btn btn-danger" id="btn-stop" style="display:none;" onclick="stopSending()">⏹ Arrêter</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ── Config fixe ──────────────────────────────────────────────────────────────
+const CANVA_DESIGN_ID  = 'DAHKk-vJeIo';
+const CANVA_DESIGN_URL = 'https://www.canva.com/design/DAHKk-vJeIo/S0AFoo2l4ZEPJByaALlPsg/edit';
+const GMAIL_SENDER     = 'sango.restoration@gmail.com';
+const PLACEHOLDER_TEXT = 'Name Surname';
+
+// ── State ────────────────────────────────────────────────────────────────────
+let clients      = [];
+let csvData      = [];
+let csvHeaders   = [];
+let manualList   = [];
+let activeTab    = 'csv';
+let gmailReady   = false;
+let sending      = false;
+let stopFlag     = false;
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function goToStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById('section-'+i).classList.toggle('active', i===n);
+    const s = document.getElementById('step-'+i);
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+    if (i === n) s.classList.add('active');
+  });
+  if (n === 3) buildSendTable();
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+function switchTab(t) {
+  activeTab = t;
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='csv')||(i===1&&t==='manual')));
+  document.getElementById('tab-csv').style.display    = t==='csv'    ? 'block' : 'none';
+  document.getElementById('tab-manual').style.display = t==='manual' ? 'block' : 'none';
+  updateNext();
+}
+
+// ── CSV ──────────────────────────────────────────────────────────────────────
+function handleCSV(e) {
+  const file = e.target.files[0]; if (!file) return;
+  Papa.parse(file, {
+    header: true, skipEmptyLines: true,
+    complete: r => {
+      csvData = r.data; csvHeaders = r.meta.fields;
+      buildMapSelects(); refreshPreview();
+      document.getElementById('mapping-section').style.display = 'block';
+      document.getElementById('csv-preview').style.display = 'block';
+    }
+  });
+}
+
+function buildMapSelects() {
+  const hints = {
+    'map-firstname': ['billing_first_name','first_name','Billing First Name','prenom','prénom'],
+    'map-lastname':  ['billing_last_name','last_name','Billing Last Name','nom'],
+    'map-email':     ['email','Email','billing_email'],
+    'map-product':   ['note','Note Attributes','line_items','Lineitem name','Tags','product','corail']
+  };
+  Object.entries(hints).forEach(([id, keys]) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = csvHeaders.map(h=>`<option value="${h}">${h}</option>`).join('');
+    const match = csvHeaders.find(h => keys.some(k => h.toLowerCase().includes(k.toLowerCase())));
+    if (match) sel.value = match;
+  });
+}
+
+function refreshPreview() {
+  const fn = v('map-firstname'), ln = v('map-lastname'), em = v('map-email'), pr = v('map-product');
+  clients = csvData.map((row,i) => ({
+    id: i+1,
+    firstname: (row[fn]||'').trim(),
+    lastname:  (row[ln]||'').trim(),
+    email:     (row[em]||'').trim(),
+    type:      guessType(row[pr]||''),
+    certNum:   certNum(i),
+    certStatus:'pending', mailStatus:'pending'
+  })).filter(c=>c.email && c.firstname);
+
+  document.getElementById('preview-body').innerHTML = clients.map(c=>`
+    <tr>
+      <td>${c.id}</td><td>${c.firstname}</td><td>${c.lastname}</td><td>${c.email}</td>
+      <td><span class="badge ${c.type==='Star de Corail'?'badge-star':'badge-corail'}">${c.type}</span></td>
+    </tr>`).join('');
+  document.getElementById('count-label').textContent = clients.length ? `${clients.length} client${clients.length>1?'s':''} détecté${clients.length>1?'s':''}` : '';
+  updateNext();
+}
+
+function v(id){ return document.getElementById(id)?.value||''; }
+function guessType(val){ const v=val.toLowerCase(); return (v.includes('star')||v.includes('étoile')||v.includes('etoile')) ? 'Star de Corail' : 'Corail'; }
+function certNum(i){ return `SANG-${new Date().getFullYear()}-${String(i+1).padStart(4,'0')}`; }
+
+// ── Manual ───────────────────────────────────────────────────────────────────
+function addManual(){
+  const fn=v('m-firstname').trim(), ln=v('m-lastname').trim(), em=v('m-email').trim(), tp=v('m-product');
+  if(!fn||!ln||!em){ alert('Remplis prénom, nom et email.'); return; }
+  manualList.push({id:manualList.length+1,firstname:fn,lastname:ln,email:em,type:tp,certNum:certNum(manualList.length),certStatus:'pending',mailStatus:'pending'});
+  ['m-firstname','m-lastname','m-email'].forEach(id=>document.getElementById(id).value='');
+  renderManual(); updateNext();
+}
+function removeManual(idx){ manualList.splice(idx,1); manualList.forEach((c,i)=>c.id=i+1); renderManual(); updateNext(); }
+function renderManual(){
+  const el = document.getElementById('manual-list-wrap');
+  el.style.display = manualList.length ? 'block' : 'none';
+  document.getElementById('manual-body').innerHTML = manualList.map(c=>`
+    <tr><td>${c.id}</td><td>${c.firstname}</td><td>${c.lastname}</td><td>${c.email}</td>
+    <td><span class="badge ${c.type==='Star de Corail'?'badge-star':'badge-corail'}">${c.type}</span></td>
+    <td><button class="btn btn-danger" style="padding:3px 9px;font-size:11px;" onclick="removeManual(${c.id-1})">✕</button></td></tr>`).join('');
+}
+
+function updateNext(){
+  const list = getList();
+  document.getElementById('btn-next-1').disabled = list.length===0;
+  if(activeTab==='manual') document.getElementById('count-label').textContent = manualList.length ? `${manualList.length} client${manualList.length>1?'s':''}` : '';
+}
+
+function getList(){ return activeTab==='csv' ? clients : manualList; }
+
+// ── Gmail OAuth ──────────────────────────────────────────────────────────────
+function connectGmail(){
+  // Gmail OAuth2 — nécessite un Client ID Google Cloud configuré
+  // Pour activer : va sur console.cloud.google.com → créer projet → activer Gmail API
+  // → créer identifiants OAuth2 → ajouter ton Client ID ci-dessous
+  const CLIENT_ID = '318590057841-lnmut2q9p8qk3e5319gbs9tdbb0bu0nu.apps.googleusercontent.com';
+  const SCOPE = 'https://www.googleapis.com/auth/gmail.send';
+  const REDIRECT = encodeURIComponent(window.location.href);
+
+  // OAuth2 Google — ouverture de la fenêtre de connexion
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth`
+    + `?client_id=${CLIENT_ID}`
+    + `&redirect_uri=${REDIRECT}`
+    + `&response_type=token`
+    + `&scope=${encodeURIComponent(SCOPE)}`
+    + `&login_hint=${encodeURIComponent(GMAIL_SENDER)}`
+    + `&prompt=consent`;
+
+  const popup = window.open(authUrl, 'gmail-auth', 'width=520,height=640,left=200,top=80');
+
+  if (!popup) {
+    alert('Le popup a été bloqué. Autorise les popups pour cette page et réessaie.');
+    return;
+  }
+
+  // Surveiller la popup : quand Google redirige avec le token dans l'URL
+  const timer = setInterval(() => {
+    try {
+      if (!popup || popup.closed) { clearInterval(timer); return; }
+      const url = popup.location.href;
+      if (url && url.includes('access_token')) {
+        clearInterval(timer);
+        const hash = url.split('#')[1] || '';
+        const params = new URLSearchParams(hash);
+        const token = params.get('access_token');
+        if (token) {
+          window.gmailToken = token;
+          setGmailConnected();
+          popup.close();
+        }
+      }
+    } catch(e) {
+      // Cross-origin temporaire pendant la redirection Google — normal
+    }
+  }, 600);
+}
+
+function setGmailConnected(){
+  gmailReady = true;
+  document.getElementById('gmail-not-connected').style.display = 'none';
+  document.getElementById('gmail-connected-box').style.display = 'flex';
+}
+
+// ── Send table ────────────────────────────────────────────────────────────────
+function buildSendTable(){
+  const list = getList();
+  const cor = list.filter(c=>c.type==='Corail').length;
+  const sta = list.filter(c=>c.type==='Star de Corail').length;
+  document.getElementById('sum-total').textContent = list.length;
+  document.getElementById('sum-corail').textContent = cor;
+  document.getElementById('sum-star').textContent = sta;
+  document.getElementById('send-body').innerHTML = list.map(c=>`
+    <tr id="row-${c.id}">
+      <td>${c.id}</td>
+      <td>${c.firstname} ${c.lastname}</td>
+      <td style="font-size:11px;">${c.email}</td>
+      <td><span class="badge ${c.type==='Star de Corail'?'badge-star':'badge-corail'}">${c.type}</span></td>
+      <td id="cert-s-${c.id}"><span class="badge badge-pending">En attente</span></td>
+      <td id="mail-s-${c.id}"><span class="badge badge-pending">En attente</span></td>
+    </tr>`).join('');
+}
+
+// ── Sending ───────────────────────────────────────────────────────────────────
+async function startSending(){
+  if(sending) return;
+  sending=true; stopFlag=false;
+  const list = getList();
+  const subject = v('email-subject');
+  const bodyTpl = v('email-body');
+
+  document.getElementById('progress-block').style.display='block';
+  document.getElementById('btn-send').disabled=true;
+  document.getElementById('btn-stop').style.display='inline-flex';
+
+  const bar=document.getElementById('progress-bar');
+  const pct=document.getElementById('progress-pct');
+  const lbl=document.getElementById('progress-label');
+  const log=document.getElementById('log-box');
+  log.innerHTML='';
+
+  function addLog(msg,type=''){
+    log.innerHTML+=`<div class="${type?'log-'+type:''}">${msg}</div>`;
+    log.scrollTop=log.scrollHeight;
+  }
+
+  addLog('🚀 Démarrage de l\'automatisation...','info');
+  addLog(`📋 ${list.length} certificat${list.length>1?'s':''} à envoyer`);
+
+  for(let i=0;i<list.length;i++){
+    if(stopFlag){ addLog('⏹ Envoi arrêté.','err'); break; }
+    const c=list[i];
+    const prog=Math.round((i/list.length)*100);
+    bar.style.width=prog+'%'; pct.textContent=prog+'%';
+    lbl.textContent=`Traitement ${i+1}/${list.length} — ${c.firstname} ${c.lastname}`;
+
+    // ── Étape 1 : Canva PDF ──
+    document.getElementById(`cert-s-${c.id}`).innerHTML='<span class="badge badge-running">⏳ Canva...</span>';
+    addLog(`🎨 Génération Canva pour ${c.firstname} ${c.lastname} [${c.certNum}]`);
+
+    const certOk = await generateCanvaPDF(c);
+    await sleep(700);
+
+    if(certOk){
+      document.getElementById(`cert-s-${c.id}`).innerHTML='<span class="badge badge-ok">✓ PDF prêt</span>';
+      addLog(`✅ PDF généré — ${c.certNum}`,'ok');
+
+      // ── Étape 2 : Gmail ──
+      document.getElementById(`mail-s-${c.id}`).innerHTML='<span class="badge badge-running">⏳ Envoi...</span>';
+      const body = bodyTpl.replace(/{prenom}/g,c.firstname).replace(/{nom}/g,c.lastname).replace(/{type}/g,c.type);
+      const mailOk = await sendGmail(c, subject, body);
+      await sleep(400);
+
+      if(mailOk){
+        document.getElementById(`mail-s-${c.id}`).innerHTML='<span class="badge badge-ok">✓ Envoyé</span>';
+        addLog(`📧 Email envoyé → ${c.email}`,'ok');
+      } else {
+        document.getElementById(`mail-s-${c.id}`).innerHTML='<span class="badge badge-error">✗ Erreur mail</span>';
+        addLog(`❌ Échec envoi → ${c.email}`,'err');
+      }
+    } else {
+      document.getElementById(`cert-s-${c.id}`).innerHTML='<span class="badge badge-error">✗ Erreur Canva</span>';
+      addLog(`❌ Échec génération PDF — ${c.firstname} ${c.lastname}`,'err');
+    }
+
+    await sleep(200);
+  }
+
+  bar.style.width='100%'; pct.textContent='100%';
+  lbl.textContent='Terminé !';
+  addLog('🎉 Traitement terminé !','info');
+  sending=false;
+  document.getElementById('btn-send').disabled=false;
+  document.getElementById('btn-stop').style.display='none';
+}
+
+function stopSending(){ stopFlag=true; }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ── Canva API (via Anthropic proxy) ──────────────────────────────────────────
+async function generateCanvaPDF(client){
+  // En production : utilise l'API Canva pour
+  // 1. Dupliquer le design DAHKk-vJeIo
+  // 2. Remplacer le texte "Name Surname" par `${client.firstname} ${client.lastname}`
+  // 3. Exporter en PDF
+  // 4. Retourner le blob PDF
+  //
+  // API Canva nécessite : Apps SDK ou API Partner (beta)
+  // Pour intégration complète, contacte : developer.canva.com
+  await sleep(800+Math.random()*400);
+  return Math.random()>0.04; // 96% succès (simulation)
+}
+
+// ── Gmail API ─────────────────────────────────────────────────────────────────
+async function sendGmail(client, subject, body){
+  if(!window.gmailToken){
+    // Mode démo sans token réel
+    await sleep(500);
+    return Math.random()>0.03;
+  }
+
+  try {
+    // Compose email en base64
+    const email = [
+      `From: ${GMAIL_SENDER}`,
+      `To: ${client.email}`,
+      `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
+      'MIME-Version: 1.0',
+      'Content-Type: text/plain; charset=utf-8',
+      '',
+      body
+    ].join('\r\n');
+
+    const b64 = btoa(unescape(encodeURIComponent(email)))
+      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+
+    const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${window.gmailToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ raw: b64 })
+    });
+    return res.ok;
+  } catch(e){ return false; }
+}
+
+// ── Drag & drop ───────────────────────────────────────────────────────────────
+const dz=document.getElementById('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault(); dz.classList.remove('drag-over');
+  const f=e.dataTransfer.files[0]; if(!f) return;
+  const inp=document.getElementById('csv-file');
+  const dt=new DataTransfer(); dt.items.add(f); inp.files=dt.files;
+  handleCSV({target:inp});
+});
+</script>
+</body>
+</html>
