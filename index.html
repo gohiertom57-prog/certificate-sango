@@ -227,18 +227,11 @@
 </div>
 
 <script>
-// Hash simple pour ne pas exposer le mot de passe en clair
-async function hashPwd(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-const HASH = '92defb2076ce661ccb2c6c8d49556b72d53a47858455d4bbb16a525b8ff771c1'; // Sango004
-
-async function checkPwd() {
+function checkPwd() {
   const val = document.getElementById('pwd-input').value;
-  const h = await hashPwd(val);
-  if (h === HASH) {
+  // Vérification simple encodée
+  const ok = btoa(val) === btoa('Sango004');
+  if (ok) {
     document.getElementById('lock-screen').style.display = 'none';
     sessionStorage.setItem('sango-auth', '1');
   } else {
