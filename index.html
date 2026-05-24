@@ -190,6 +190,70 @@
 </style>
 </head>
 <body>
+
+<div id="lock-screen" style="
+  position:fixed; inset:0; z-index:9999;
+  background:#0a1628;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  font-family:'DM Sans',sans-serif;
+">
+  <div style="text-align:center; margin-bottom:32px;">
+    <div style="font-family:'Playfair Display',serif; font-size:22px; letter-spacing:4px; color:#c9a84c; text-transform:uppercase; margin-bottom:6px;">Sango × Livingseas</div>
+    <div style="font-size:13px; color:#8899aa; letter-spacing:1px;">Accès sécurisé — Certificats</div>
+  </div>
+  <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(201,168,76,0.25); border-radius:12px; padding:36px 40px; width:320px; text-align:center;">
+    <div style="font-size:32px; margin-bottom:16px;">🔒</div>
+    <div style="font-size:14px; color:#e8e4dc; margin-bottom:20px; font-weight:500;">Mot de passe requis</div>
+    <input id="pwd-input" type="password" placeholder="Entrez le mot de passe"
+      style="width:100%; padding:12px 16px; border-radius:8px; border:1px solid rgba(201,168,76,0.3);
+      background:rgba(255,255,255,0.06); color:#e8e4dc; font-size:14px; font-family:'DM Sans',sans-serif;
+      outline:none; margin-bottom:12px; text-align:center; letter-spacing:2px;"
+      onkeydown="if(event.key==='Enter') checkPwd()"/>
+    <button onclick="checkPwd()" style="
+      width:100%; padding:12px; border-radius:8px; border:none;
+      background:linear-gradient(135deg,#c9a84c,#b8902a);
+      color:#0a1628; font-family:'DM Sans',sans-serif; font-size:13px;
+      font-weight:700; letter-spacing:2px; text-transform:uppercase; cursor:pointer;">
+      Accéder →
+    </button>
+    <div id="pwd-error" style="display:none; margin-top:12px; font-size:12px; color:#e07777;">
+      ❌ Mot de passe incorrect
+    </div>
+  </div>
+  <div style="margin-top:24px; font-size:11px; color:rgba(136,153,170,0.4); letter-spacing:1px;">
+    Usage réservé — SANGO × Livingseas
+  </div>
+</div>
+
+<script>
+// Hash simple pour ne pas exposer le mot de passe en clair
+async function hashPwd(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+const HASH = 'b9b7939cce501484cfad8c78e193b644a2b0a82e79e9cf2fef1dc6cb74ee2f87'; // Sango004
+
+async function checkPwd() {
+  const val = document.getElementById('pwd-input').value;
+  const h = await hashPwd(val);
+  if (h === HASH) {
+    document.getElementById('lock-screen').style.display = 'none';
+    sessionStorage.setItem('sango-auth', '1');
+  } else {
+    document.getElementById('pwd-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+// Si déjà authentifié dans la session
+if (sessionStorage.getItem('sango-auth') === '1') {
+  document.getElementById('lock-screen').style.display = 'none';
+}
+</script>
+
 <div class="container">
 
   <!-- Header -->
