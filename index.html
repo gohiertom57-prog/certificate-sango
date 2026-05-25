@@ -271,6 +271,38 @@ if (sessionStorage.getItem('sango-auth') === '1') {
     <div class="step" id="step-3"><div class="step-num">3</div><div class="step-label">Envoi</div></div>
   </div>
 
+
+  <!-- Stock Widget -->
+  <div id="stock-widget" style="
+    display:flex; align-items:center; justify-content:space-between;
+    background:rgba(255,255,255,0.04); border:1px solid rgba(201,168,76,0.25);
+    border-radius:10px; padding:14px 24px; margin-bottom:28px;
+  ">
+    <div style="display:flex; align-items:center; gap:16px;">
+      <span style="font-size:26px;">🪸</span>
+      <div>
+        <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#8899aa; font-weight:600; margin-bottom:3px;">Stock disponible</div>
+        <div style="display:flex; align-items:baseline; gap:8px;">
+          <span id="stock-count" style="font-family:'Playfair Display',serif; font-size:36px; font-weight:600; color:#c9a84c; line-height:1;">—</span>
+          <span style="font-size:12px; color:#8899aa; letter-spacing:1px;">coraux restants</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div id="stock-alert" style="display:none; font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px; background:rgba(224,85,85,0.15); color:#e07777; border:1px solid rgba(224,85,85,0.3);">
+        ⚠️ Stock bas !
+      </div>
+      <button onclick="goToSettings()" style="
+        background:none; border:1px solid rgba(201,168,76,0.25); border-radius:7px;
+        padding:8px 16px; color:#8899aa; font-family:'DM Sans',sans-serif;
+        font-size:12px; font-weight:600; letter-spacing:1px; text-transform:uppercase;
+        cursor:pointer; transition:all 0.2s;
+      " onmouseover="this.style.borderColor='#c9a84c';this.style.color='#c9a84c'"
+         onmouseout="this.style.borderColor='rgba(201,168,76,0.25)';this.style.color='#8899aa'">
+        ⚙️ Réglages
+      </button>
+    </div>
+  </div>
   <!-- ── SECTION 1 : Import ── -->
   <div class="section active" id="section-1">
     <div class="card">
@@ -484,6 +516,68 @@ L'équipe SANGO × Livingseas</textarea>
         <button class="btn btn-outline" onclick="goToStep(2)">← Retour</button>
         <button class="btn btn-primary" id="btn-send" onclick="startSending()">🚀 Lancer l'envoi</button>
         <button class="btn btn-danger" id="btn-stop" style="display:none;" onclick="stopSending()">⏹ Arrêter</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── SECTION RÉGLAGES ── -->
+  <div class="section" id="section-settings">
+    <div class="card">
+      <div class="card-title">⚙️ Réglages du stock</div>
+      <div class="card-sub">Modifie le nombre de coraux disponibles. Le stock est automatiquement mis à jour à chaque certificat envoyé.</div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+        <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:20px; text-align:center;">
+          <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#8899aa; font-weight:600; margin-bottom:8px;">Stock actuel</div>
+          <div id="settings-stock-current" style="font-family:'Playfair Display',serif; font-size:48px; font-weight:600; color:#c9a84c; line-height:1;">—</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:20px; text-align:center;">
+          <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#8899aa; font-weight:600; margin-bottom:8px;">Total envoyés</div>
+          <div id="settings-stock-sent" style="font-family:'Playfair Display',serif; font-size:48px; font-weight:600; color:#c06530; line-height:1;">—</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title" style="font-size:14px; margin-bottom:16px;">Modifier le stock</div>
+        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+          <div class="form-group" style="flex:1; min-width:150px;">
+            <label>Nouveau stock total</label>
+            <input type="number" id="new-stock-val" placeholder="ex: 150" min="0" style="font-size:20px; text-align:center; font-family:'Playfair Display',serif;"/>
+          </div>
+          <button class="btn btn-primary" onclick="updateStock()" style="margin-bottom:0;">
+            ✓ Mettre à jour
+          </button>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-outline" onclick="adjustStock(10)" style="font-size:11px; padding:7px 14px;">+ 10</button>
+          <button class="btn btn-outline" onclick="adjustStock(25)" style="font-size:11px; padding:7px 14px;">+ 25</button>
+          <button class="btn btn-outline" onclick="adjustStock(50)" style="font-size:11px; padding:7px 14px;">+ 50</button>
+          <button class="btn btn-outline" onclick="adjustStock(100)" style="font-size:11px; padding:7px 14px;">+ 100</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title" style="font-size:14px; margin-bottom:16px;">Seuil d'alerte</div>
+        <div class="card-sub" style="margin-bottom:12px;">Reçois une alerte visuelle quand le stock descend sous ce nombre.</div>
+        <div style="display:flex; gap:10px; align-items:flex-end;">
+          <div class="form-group" style="flex:1;">
+            <label>Seuil d'alerte (coraux)</label>
+            <input type="number" id="alert-threshold" min="1" style="font-size:16px; text-align:center;"/>
+          </div>
+          <button class="btn btn-primary" onclick="updateThreshold()">✓ Sauvegarder</button>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="card-title" style="font-size:14px; margin-bottom:12px;">📋 Historique des envois</div>
+      <div id="history-list" style="max-height:220px; overflow-y:auto;">
+        <div style="text-align:center; color:#8899aa; font-size:13px; padding:20px;">Aucun envoi pour le moment</div>
+      </div>
+
+      <div class="actions-row" style="margin-top:20px;">
+        <button class="btn btn-outline" onclick="goToSettings(false)">← Retour</button>
+        <button class="btn btn-danger" onclick="resetHistory()" style="font-size:11px; padding:8px 16px;">Réinitialiser l'historique</button>
       </div>
     </div>
   </div>
@@ -704,6 +798,10 @@ async function startSending(){
   }
 
   addLog('🚀 Démarrage de l\'automatisation...','info');
+  const stockAvail = getStock();
+  if (stockAvail < list.length) {
+    addLog(`⚠️ Attention : stock insuffisant ! ${stockAvail} coraux disponibles pour ${list.length} clients.`, 'err');
+  }
   addLog(`📋 ${list.length} certificat${list.length>1?'s':''} à envoyer`);
 
   for(let i=0;i<list.length;i++){
@@ -777,19 +875,21 @@ async function generateCanvaPDF(client) {
       const scaleX = W / 3000;
       const scaleY = H / 1688;
       
-      // Draw client name centered in empty zone below ❊❊❊
-      const scaleX = W / 3000;
-      const scaleY = H / 1688;
-
-      // Centered in left half (x: 50-820), vertically in empty zone (y: 430-720)
-      const nameCenterX = 420 * scaleX;
-      const nameY = 610 * scaleY;
-      const fontSize = Math.round(65 * scaleY);
-
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = `bold ${fontSize}px Georgia, serif`;
-      ctx.textAlign = 'center';
+      // Draw client name — auto font size based on name length
+      const nameCenterX = 840 * (W / 3000);
+      const nameY = 590 * (H / 1688);
+      const maxNameWidth = 1500 * (W / 3000);
       const fullName = client.firstname + ' ' + client.lastname;
+
+      // Start at ideal size and shrink until fits
+      let fontSize = Math.round(105 * (H / 1688));
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      while (fontSize > Math.round(40 * (H / 1688))) {
+        ctx.font = `bold ${fontSize}px Georgia, serif`;
+        if (ctx.measureText(fullName).width <= maxNameWidth) { break; }
+        fontSize -= 2;
+      }
       ctx.fillText(fullName, nameCenterX, nameY);
 
       // Convert canvas to PDF via data URL
@@ -871,6 +971,156 @@ dz.addEventListener('drop',e=>{
   const dt=new DataTransfer(); dt.items.add(f); inp.files=dt.files;
   handleCSV({target:inp});
 });
+
+// ── Stock Management ─────────────────────────────────────────────────────────
+const STOCK_KEY   = 'sango_stock';
+const SENT_KEY    = 'sango_sent';
+const THRESH_KEY  = 'sango_threshold';
+const HISTORY_KEY = 'sango_history';
+
+function getStock()     { return parseInt(localStorage.getItem(STOCK_KEY) ?? '50'); }
+function getSent()      { return parseInt(localStorage.getItem(SENT_KEY) ?? '0'); }
+function getThreshold() { return parseInt(localStorage.getItem(THRESH_KEY) ?? '10'); }
+function getHistory()   { return JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '[]'); }
+
+function saveStock(n)   { localStorage.setItem(STOCK_KEY, n); refreshStockUI(); }
+function saveSent(n)    { localStorage.setItem(SENT_KEY, n); }
+function saveThreshold(n){ localStorage.setItem(THRESH_KEY, n); }
+function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+
+function refreshStockUI() {
+  const stock = getStock();
+  const thresh = getThreshold();
+  const el = document.getElementById('stock-count');
+  const alert = document.getElementById('stock-alert');
+  const cur = document.getElementById('settings-stock-current');
+  const sent = document.getElementById('settings-stock-sent');
+  if (el) {
+    el.textContent = stock;
+    el.style.color = stock <= thresh ? '#e07777' : stock <= thresh * 2 ? '#e8a84c' : '#c9a84c';
+  }
+  if (alert) alert.style.display = stock <= thresh ? 'flex' : 'none';
+  if (cur) { cur.textContent = stock; cur.style.color = stock <= thresh ? '#e07777' : '#c9a84c'; }
+  if (sent) sent.textContent = getSent();
+  // Update threshold input
+  const ti = document.getElementById('alert-threshold');
+  if (ti) ti.value = thresh;
+  const ns = document.getElementById('new-stock-val');
+  if (ns) ns.value = '';
+  renderHistory();
+}
+
+function decrementStock(count) {
+  const current = getStock();
+  const newStock = Math.max(0, current - count);
+  saveStock(newStock);
+  saveSent(getSent() + count);
+}
+
+function updateStock() {
+  const val = parseInt(document.getElementById('new-stock-val').value);
+  if (isNaN(val) || val < 0) { alert('Entre un nombre valide.'); return; }
+  saveStock(val);
+  showToast(`✅ Stock mis à jour : ${val} coraux`);
+}
+
+function adjustStock(amount) {
+  saveStock(getStock() + amount);
+  showToast(`✅ + ${amount} coraux ajoutés`);
+}
+
+function updateThreshold() {
+  const val = parseInt(document.getElementById('alert-threshold').value);
+  if (isNaN(val) || val < 1) { alert('Entre un seuil valide.'); return; }
+  saveThreshold(val);
+  refreshStockUI();
+  showToast(`✅ Seuil d'alerte : ${val} coraux`);
+}
+
+function addToHistory(client, certNum) {
+  const h = getHistory();
+  h.unshift({
+    name: client.firstname + ' ' + client.lastname,
+    email: client.email,
+    type: client.type,
+    cert: certNum,
+    date: new Date().toLocaleDateString('fr-FR'),
+    time: new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})
+  });
+  saveHistory(h.slice(0, 200)); // keep last 200
+}
+
+function renderHistory() {
+  const h = getHistory();
+  const el = document.getElementById('history-list');
+  if (!el) return;
+  if (!h.length) {
+    el.innerHTML = '<div style="text-align:center;color:#8899aa;font-size:13px;padding:20px;">Aucun envoi pour le moment</div>';
+    return;
+  }
+  el.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <thead style="background:rgba(201,168,76,0.08);">
+        <tr>
+          <th style="padding:8px 12px;text-align:left;color:#c9a84c;font-size:10px;letter-spacing:2px;text-transform:uppercase;">Client</th>
+          <th style="padding:8px 12px;text-align:left;color:#c9a84c;font-size:10px;letter-spacing:2px;text-transform:uppercase;">Type</th>
+          <th style="padding:8px 12px;text-align:left;color:#c9a84c;font-size:10px;letter-spacing:2px;text-transform:uppercase;">Certificat</th>
+          <th style="padding:8px 12px;text-align:left;color:#c9a84c;font-size:10px;letter-spacing:2px;text-transform:uppercase;">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${h.map(e=>`
+          <tr style="border-top:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:9px 12px;color:#e8e4dc;">${e.name}<br><span style="font-size:10px;color:#8899aa;">${e.email}</span></td>
+            <td style="padding:9px 12px;"><span class="badge ${e.type==='Star de Corail'?'badge-star':'badge-corail'}">${e.type}</span></td>
+            <td style="padding:9px 12px;color:#8899aa;font-size:11px;">${e.cert}</td>
+            <td style="padding:9px 12px;color:#8899aa;font-size:11px;">${e.date}<br>${e.time}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function resetHistory() {
+  if (!confirm('Effacer tout l\'historique des envois ?')) return;
+  saveHistory([]);
+  renderHistory();
+  showToast('🗑️ Historique effacé');
+}
+
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a3a5c;border:1px solid rgba(201,168,76,0.4);color:#e8e4dc;padding:12px 24px;border-radius:8px;font-size:13px;font-weight:500;z-index:9998;transition:opacity 0.3s;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => t.style.opacity = '0', 2500);
+}
+
+function goToSettings(show = true) {
+  if (show) {
+    [1,2,3].forEach(i => document.getElementById('section-'+i)?.classList.remove('active'));
+    document.getElementById('section-settings').classList.add('active');
+    [1,2,3].forEach(i => {
+      const s = document.getElementById('step-'+i);
+      if(s) { s.classList.remove('active','done'); }
+    });
+    refreshStockUI();
+  } else {
+    document.getElementById('section-settings').classList.remove('active');
+    document.getElementById('section-1').classList.add('active');
+    document.getElementById('step-1').classList.add('active');
+  }
+}
+
+// Init stock on page load
+document.addEventListener('DOMContentLoaded', () => {
+  refreshStockUI();
+});
+
 </script>
 </body>
 </html>
