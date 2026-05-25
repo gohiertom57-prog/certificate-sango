@@ -576,7 +576,7 @@ L'équipe SANGO × Livingseas</textarea>
       </div>
 
       <div class="actions-row" style="margin-top:20px;">
-        <button class="btn btn-outline" onclick="goToSettings(false)">← Retour</button>
+        <button class="btn btn-primary" onclick="goToSettings(false)">← Retour aux envois</button>
         <button class="btn btn-danger" onclick="resetHistory()" style="font-size:11px; padding:8px 16px;">Réinitialiser l'historique</button>
       </div>
     </div>
@@ -831,6 +831,9 @@ async function startSending(){
       if(mailOk){
         document.getElementById(`mail-s-${c.id}`).innerHTML='<span class="badge badge-ok">✓ Envoyé</span>';
         addLog(`📧 Email envoyé → ${c.email}`,'ok');
+        decrementStock(1);
+        addToHistory(c, c.certNum);
+        refreshStockUI();
       } else {
         document.getElementById(`mail-s-${c.id}`).innerHTML='<span class="badge badge-error">✗ Erreur mail</span>';
         addLog(`❌ Échec envoi → ${c.email}`,'err');
@@ -1111,6 +1114,13 @@ function goToSettings(show = true) {
     refreshStockUI();
   } else {
     document.getElementById('section-settings').classList.remove('active');
+    // Reset to step 1
+    [1,2,3].forEach(i => {
+      const sec = document.getElementById('section-'+i);
+      const st = document.getElementById('step-'+i);
+      if(sec) sec.classList.remove('active');
+      if(st) { st.classList.remove('active','done'); }
+    });
     document.getElementById('section-1').classList.add('active');
     document.getElementById('step-1').classList.add('active');
   }
